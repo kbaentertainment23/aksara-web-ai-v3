@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>A K S A R A - Aplikasi Kendali Skripsi, Tugas Akhir, & Riset Akademik</title>
+    <meta name="description" content="Aplikasi Kendali Skripsi, Tugas Akhir, & Riset Akademik berbasis standar Dikti untuk membantu mahasiswa menyusun karya ilmiah secara terstruktur, presisi, dan berkualitas." />
+    
+    <!-- PWA & Mobile Web App Capabilities -->
+    <meta name="theme-color" content="#0F2848" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="AKSARA" />
+    <meta name="application-name" content="A K S A R A" />
+
+    <!-- OpenGraph & Social Cards -->
+    <meta property="og:title" content="A K S A R A - Aplikasi Kendali Skripsi, Tugas Akhir, & Riset Akademik" />
+    <meta property="og:description" content="Aplikasi Kendali Skripsi, Tugas Akhir, & Riset Akademik berbasis standar Dikti untuk membantu mahasiswa menyusun karya ilmiah secara terstruktur, presisi, dan berkualitas." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Icons & Manifest -->
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script>
+      (function() {
+        // 1. Suppress window error events for Vite WebSocket in iframe/proxy environments
+        window.addEventListener('error', function(event) {
+          var msg = (event && (event.message || (event.error && event.error.message))) || String(event || '');
+          if (
+            msg.indexOf('WebSocket') !== -1 ||
+            msg.indexOf('failed to connect to websocket') !== -1 ||
+            msg.indexOf('WebSocket closed without opened') !== -1
+          ) {
+            if (event.preventDefault) event.preventDefault();
+            if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+            return true;
+          }
+        }, true);
+
+        // 2. Suppress unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(event) {
+          var reason = event && (event.reason && event.reason.message ? event.reason.message : String(event.reason || ''));
+          if (
+            reason.indexOf('WebSocket') !== -1 ||
+            reason.indexOf('failed to connect to websocket') !== -1 ||
+            reason.indexOf('WebSocket closed without opened') !== -1
+          ) {
+            event.preventDefault();
+          }
+        });
+
+        // 3. Filter console.error from @vite/client
+        var origConsoleError = console.error;
+        console.error = function() {
+          var args = Array.prototype.slice.call(arguments);
+          var str = args.map(function(item) {
+            return (item && item.stack) ? item.stack : String(item);
+          }).join(' ');
+          if (
+            str.indexOf('WebSocket closed without opened') !== -1 ||
+            str.indexOf('failed to connect to websocket') !== -1 ||
+            (str.indexOf('[vite]') !== -1 && str.indexOf('WebSocket') !== -1)
+          ) {
+            return;
+          }
+          origConsoleError.apply(console, arguments);
+        };
+
+        // 4. Safe WebSocket shim for Vite HMR in cloud preview iframe
+        if (typeof window !== 'undefined' && window.WebSocket) {
+          var RealWebSocket = window.WebSocket;
+          window.WebSocket = function(url, protocols) {
+            var urlStr = String(url || '');
+            // If this is a Vite HMR websocket connection in preview environment
+            if (urlStr.indexOf('token=') !== -1 || urlStr.indexOf('24678') !== -1 || urlStr.indexOf('/@vite/') !== -1) {
+              var fakeSocket = {
+                readyState: 1, // OPEN
+                send: function() {},
+                close: function() {},
+                addEventListener: function(event, handler) {
+                  if (event === 'open') {
+                    setTimeout(function() {
+                      try { handler({ type: 'open' }); } catch(e) {}
+                    }, 50);
+                  }
+                },
+                removeEventListener: function() {},
+                dispatchEvent: function() { return true; },
+                onopen: null,
+                onclose: null,
+                onerror: null,
+                onmessage: null
+              };
+              setTimeout(function() {
+                if (typeof fakeSocket.onopen === 'function') {
+                  try { fakeSocket.onopen({ type: 'open' }); } catch(e) {}
+                }
+              }, 50);
+              return fakeSocket;
+            }
+            return new RealWebSocket(url, protocols);
+          };
+          window.WebSocket.prototype = RealWebSocket.prototype;
+          window.WebSocket.CONNECTING = RealWebSocket.CONNECTING;
+          window.WebSocket.OPEN = RealWebSocket.OPEN;
+          window.WebSocket.CLOSING = RealWebSocket.CLOSING;
+          window.WebSocket.CLOSED = RealWebSocket.CLOSED;
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

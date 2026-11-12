@@ -1,0 +1,8 @@
+{
+  "name": "AI Skripsi \u0026 Tesis v10",
+  "description": "Asisten akademik berbasis AI untuk membantu mahasiswa menyusun karya ilmiah, skripsi, tesis, dan disertasi secara terstruktur dan berkualitas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

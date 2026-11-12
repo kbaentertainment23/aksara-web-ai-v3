@@ -1,0 +1,210 @@
+import fs from 'fs';
+import path from 'path';
+import sharp from 'sharp';
+
+const publicDir = path.resolve(process.cwd(), 'public');
+if (!fs.existsSync(publicDir)) {
+  fs.mkdirSync(publicDir, { recursive: true });
+}
+
+// 1. Standard Brand SVG (For 192x192, 512x512, apple-touch-icon)
+const standardSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A1628"/>
+      <stop offset="45%" stop-color="#0F2848"/>
+      <stop offset="100%" stop-color="#1E3A5F"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="50%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#0369A1"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A"/>
+      <stop offset="50%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <radialGradient id="glowGrad" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#38BDF8" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="512" height="512" rx="108" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle Border Glow -->
+  <rect x="6" y="6" width="500" height="500" rx="102" fill="none" stroke="#38BDF8" stroke-width="3" stroke-opacity="0.3"/>
+
+  <!-- Radial Glow Behind Emblem -->
+  <circle cx="256" cy="220" r="180" fill="url(#glowGrad)"/>
+
+  <g filter="url(#dropShadow)">
+    <!-- Open Book / Wings of Knowledge -->
+    <!-- Left Page -->
+    <path d="M256,290 C220,270 160,265 110,275 C102,277 96,284 96,293 L96,355 C96,365 106,373 116,370 C160,358 215,364 256,388 Z" 
+          fill="url(#accentGrad)" opacity="0.95"/>
+    <path d="M256,280 C220,260 165,255 120,265 L120,275 C165,265 220,270 256,290 Z" 
+          fill="#BAE6FD" opacity="0.7"/>
+
+    <!-- Right Page -->
+    <path d="M256,290 C292,270 352,265 402,275 C410,277 416,284 416,293 L416,355 C416,365 406,373 396,370 C352,358 297,364 256,388 Z" 
+          fill="url(#accentGrad)" opacity="0.95"/>
+    <path d="M256,280 C292,260 347,255 392,265 L392,275 C347,265 292,270 256,290 Z" 
+          fill="#BAE6FD" opacity="0.7"/>
+
+    <!-- Center Spine / Flame of Knowledge -->
+    <path d="M256,250 C262,280 260,340 256,386 C252,340 250,280 256,250 Z" fill="#F8FAFC"/>
+
+    <!-- Academic Mortarboard Cap (Top) -->
+    <!-- Cap Diamond -->
+    <polygon points="256,120 404,180 256,240 108,180" fill="url(#goldGrad)"/>
+    
+    <!-- Cap Rim / Under Skullcap -->
+    <path d="M166,204 L166,244 C166,275 206,295 256,295 C306,295 346,275 346,244 L346,204 C320,222 288,232 256,232 C224,232 192,222 166,204 Z" 
+          fill="#B45309"/>
+
+    <!-- Cap Button & Tassel -->
+    <circle cx="256" cy="180" r="10" fill="#FEF3C7"/>
+    <path d="M256,180 Q320,186 352,228 L356,270 C356,276 348,280 344,275 L340,240 Q315,195 256,180 Z" 
+          fill="#FEF08A"/>
+    <circle cx="350" cy="272" r="5" fill="#F59E0B"/>
+
+    <!-- Stylized Monogram "A" inside lower crest -->
+    <text x="256" y="358" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" 
+          font-size="64" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">A</text>
+  </g>
+
+  <!-- System Wordmark: A K S A R A -->
+  <text x="256" y="445" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" 
+        font-size="40" font-weight="800" fill="#F8FAFC" text-anchor="middle" letter-spacing="10">AKSARA</text>
+
+  <!-- Subtitle: ASISTEN RISET & KARYA ILMIAH -->
+  <text x="256" y="475" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" 
+        font-size="13" font-weight="600" fill="#38BDF8" text-anchor="middle" letter-spacing="4">KENDALI AKADEMIK TERPADU</text>
+</svg>`;
+
+// 2. Maskable SVG (Full bleed, safe area in 80% circle center)
+const maskableSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="mBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#071220"/>
+      <stop offset="45%" stop-color="#0A1D36"/>
+      <stop offset="100%" stop-color="#142B47"/>
+    </linearGradient>
+    <linearGradient id="mAccentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="50%" stop-color="#0284C7"/>
+      <stop offset="100%" stop-color="#0369A1"/>
+    </linearGradient>
+    <linearGradient id="mGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A"/>
+      <stop offset="50%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <radialGradient id="mGlowGrad" cx="50%" cy="40%" r="45%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#38BDF8" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="mDropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- Full Bleed Background (Crucial for maskable icons) -->
+  <rect width="512" height="512" fill="url(#mBgGrad)"/>
+
+  <!-- Radial Glow Behind Emblem -->
+  <circle cx="256" cy="225" r="160" fill="url(#mGlowGrad)"/>
+
+  <!-- All elements scaled and contained within the central 75% safe area (radius ~190px) -->
+  <g transform="translate(38, 20) scale(0.85)" filter="url(#mDropShadow)">
+    <!-- Open Book / Pages -->
+    <path d="M256,290 C220,270 160,265 110,275 C102,277 96,284 96,293 L96,355 C96,365 106,373 116,370 C160,358 215,364 256,388 Z" 
+          fill="url(#mAccentGrad)" opacity="0.95"/>
+    <path d="M256,280 C220,260 165,255 120,265 L120,275 C165,265 220,270 256,290 Z" 
+          fill="#BAE6FD" opacity="0.7"/>
+
+    <path d="M256,290 C292,270 352,265 402,275 C410,277 416,284 416,293 L416,355 C416,365 406,373 396,370 C352,358 297,364 256,388 Z" 
+          fill="url(#mAccentGrad)" opacity="0.95"/>
+    <path d="M256,280 C292,260 347,255 392,265 L392,275 C347,265 292,270 256,290 Z" 
+          fill="#BAE6FD" opacity="0.7"/>
+
+    <!-- Center Spine -->
+    <path d="M256,250 C262,280 260,340 256,386 C252,340 250,280 256,250 Z" fill="#F8FAFC"/>
+
+    <!-- Academic Mortarboard Cap -->
+    <polygon points="256,120 404,180 256,240 108,180" fill="url(#mGoldGrad)"/>
+    <path d="M166,204 L166,244 C166,275 206,295 256,295 C306,295 346,275 346,244 L346,204 C320,222 288,232 256,232 C224,232 192,222 166,204 Z" 
+          fill="#B45309"/>
+    <circle cx="256" cy="180" r="10" fill="#FEF3C7"/>
+    <path d="M256,180 Q320,186 352,228 L356,270 C356,276 348,280 344,275 L340,240 Q315,195 256,180 Z" 
+          fill="#FEF08A"/>
+
+    <!-- Monogram "A" -->
+    <text x="256" y="358" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" 
+          font-size="64" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">A</text>
+
+    <!-- Wordmark AKSARA -->
+    <text x="256" y="445" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" 
+          font-size="44" font-weight="800" fill="#F8FAFC" text-anchor="middle" letter-spacing="10">AKSARA</text>
+  </g>
+</svg>`;
+
+async function main() {
+  // Write SVG files
+  fs.writeFileSync(path.join(publicDir, 'icon.svg'), standardSvg);
+  fs.writeFileSync(path.join(publicDir, 'icon-maskable.svg'), maskableSvg);
+  console.log('Wrote SVG files to public/');
+
+  // Convert standardSvg to PNGs using sharp
+  const standardBuffer = Buffer.from(standardSvg);
+  const maskableBuffer = Buffer.from(maskableSvg);
+
+  // 1. 512x512 standard
+  await sharp(standardBuffer)
+    .resize(512, 512)
+    .png({ quality: 100 })
+    .toFile(path.join(publicDir, 'pwa-512x512.png'));
+  console.log('Generated pwa-512x512.png');
+
+  // 2. 192x192 standard
+  await sharp(standardBuffer)
+    .resize(192, 192)
+    .png({ quality: 100 })
+    .toFile(path.join(publicDir, 'pwa-192x192.png'));
+  console.log('Generated pwa-192x192.png');
+
+  // 3. 512x512 maskable (safe zone padded)
+  await sharp(maskableBuffer)
+    .resize(512, 512)
+    .png({ quality: 100 })
+    .toFile(path.join(publicDir, 'pwa-maskable-512x512.png'));
+  console.log('Generated pwa-maskable-512x512.png');
+
+  // 4. apple-touch-icon 180x180
+  await sharp(standardBuffer)
+    .resize(180, 180)
+    .png({ quality: 100 })
+    .toFile(path.join(publicDir, 'apple-touch-icon.png'));
+  console.log('Generated apple-touch-icon.png');
+
+  // 5. favicon 32x32
+  await sharp(standardBuffer)
+    .resize(32, 32)
+    .png()
+    .toFile(path.join(publicDir, 'favicon-32x32.png'));
+
+  // Also copy favicon to favicon.ico
+  fs.copyFileSync(path.join(publicDir, 'favicon-32x32.png'), path.join(publicDir, 'favicon.ico'));
+  console.log('Generated favicon.ico and favicon-32x32.png');
+}
+
+main().catch((err) => {
+  console.error('Error generating icons:', err);
+  process.exit(1);
+});
